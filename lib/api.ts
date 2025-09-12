@@ -78,3 +78,45 @@ export async function deleteCategory(id: string) {
     method: 'DELETE',
   });
 }
+
+// Transactions
+export type Transaction = {
+  id: string;
+  user_id: string;
+  category_id: string;
+  amount: string; // server returns string decimal
+  occurred_on: string; // YYYY-MM-DD
+  description?: string;
+};
+
+export async function listTransactions(params?: { category_id?: string; start_date?: string; end_date?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.category_id) qs.set('category_id', params.category_id);
+  if (params?.start_date) qs.set('start_date', params.start_date);
+  if (params?.end_date) qs.set('end_date', params.end_date);
+  const suffix = qs.toString() ? `?${qs.toString()}` : '';
+  // API docs show plain array without wrapper for list
+  return request<Transaction[]>(`/transactions${suffix}`, { method: 'GET' });
+}
+
+export async function createTransaction(payload: { category_id: string; amount: string | number; occurred_on: string; description?: string }) {
+  return request<Transaction>(`/transactions`, {
+    method: 'POST',
+    body: JSON.stringify({ ...payload, amount: String(payload.amount) }),
+  });
+}
+
+export async function updateTransaction(id: string, payload: Partial<{ category_id: string; amount: string | number; occurred_on: string; description?: string }>) {
+  const body: any = { ...payload };
+  if (typeof body.amount !== 'undefined') body.amount = String(body.amount);
+  return request<Transaction>(`/transactions/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function deleteTransaction(id: string) {
+  return request<{ success: boolean; message?: string }>(`/transactions/${id}`, {
+    method: 'DELETE',
+  });
+}

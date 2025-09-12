@@ -6,6 +6,7 @@ import { Category, listCategories, Transaction, listTransactions, deleteTransact
 import { useFocusEffect } from '@react-navigation/native';
 import { useToast } from '@/components/ui/toast';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
+import { useAppTheme } from '@/lib/theme';
 
 function FilterButton({ label, onPress }: { label: string; onPress?: () => void }) {
   return (
@@ -40,6 +41,7 @@ function TxnRow({ item, categoryName, isIncome, onPress, onDelete }: { item: Tra
 export default function Transactions() {
   useRequireAuth();
   const toast = useToast();
+  const { palette } = useAppTheme();
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
@@ -84,16 +86,16 @@ export default function Transactions() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: palette.background }]}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Transactions</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={() => router.push('/transaction/new')}>
+        <Text style={[styles.title, { color: palette.text }]}>Transactions</Text>
+        <TouchableOpacity style={[styles.addBtn, { backgroundColor: palette.brand }]} onPress={() => router.push('/transaction/new')}>
           <Text style={{ color: '#0B1110', fontWeight: '700', fontSize: 18 }}>+</Text>
         </TouchableOpacity>
       </View>
       <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
         <FilterButton
-          label={filters.category_id ? categoryMap[filters.category_id]?.name || 'Category' : 'Category'}
+          label={filters.category_id ? (categoryMap[filters.category_id]?.name || 'Category') : 'Category'}
           onPress={() => {
             if (categories.length === 0) return;
             const idx = filters.category_id ? categories.findIndex((c) => c.id === filters.category_id) : -1;
@@ -122,7 +124,7 @@ export default function Transactions() {
         )}
       </View>
 
-      <ScrollView style={{ marginTop: 16 }} refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchAll} tintColor="#22c55e" />}>
+      <ScrollView style={{ marginTop: 16 }} refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchAll} tintColor={palette.tint} />}>
         <View style={{ gap: 12, paddingBottom: 40 }}>
           {items.map((t) => (
             <TxnRow
@@ -134,7 +136,7 @@ export default function Transactions() {
               onDelete={() => startDelete(t.id)}
             />
           ))}
-          {items.length === 0 && !loading && <Text style={{ color: '#6b7280' }}>No transactions.</Text>}
+          {items.length === 0 && !loading && <Text style={{ color: palette.muted }}>No transactions.</Text>}
         </View>
       </ScrollView>
 
@@ -152,10 +154,10 @@ export default function Transactions() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F1513', padding: 20 },
+  container: { flex: 1, padding: 20 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
-  title: { color: '#FFFFFF', fontSize: 24, fontWeight: '800' },
-  addBtn: { backgroundColor: '#22c55e', width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 24, fontWeight: '800' },
+  addBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   filterBtn: { backgroundColor: '#1F2624', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12 },
   filterText: { color: '#E6F0EC' },
   txnCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#1F2624', borderRadius: 16, padding: 14 },
@@ -166,4 +168,3 @@ const styles = StyleSheet.create({
   income: { color: '#22c55e' },
   expense: { color: '#ef4444' },
 });
-

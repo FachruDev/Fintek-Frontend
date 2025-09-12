@@ -4,9 +4,11 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import { requestOtp, verifyOtp, signIn } from '@/lib/auth';
 import { useRedirectIfAuthenticated } from '@/lib/use-redirect-if-auth';
 import { Routes } from '@/lib/routes';
+import { useAppTheme } from '@/lib/theme';
 
 export default function VerifyOtpScreen() {
   useRedirectIfAuthenticated();
+  const { palette } = useAppTheme();
   const { email: emailParam, password: passwordParam } = useLocalSearchParams<{ email?: string; password?: string }>();
   const [email] = useState((emailParam as string) || '');
   const password = (passwordParam as string) || '';
@@ -30,7 +32,6 @@ export default function VerifyOtpScreen() {
     try {
       await verifyOtp(email.trim(), code.trim());
       if (password) {
-        // auto login when we have password from register flow
         await signIn(email.trim(), password);
         router.replace(Routes.home);
       } else {
@@ -54,18 +55,18 @@ export default function VerifyOtpScreen() {
   const boxes = Array.from({ length: 6 }).map((_, i) => code[i] || '');
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: palette.background }]}>
       <TouchableOpacity onPress={() => router.back()}>
-        <Text style={styles.back}>{'<'} </Text>
+        <Text style={[styles.back, { color: palette.muted }]}>{'<'} </Text>
       </TouchableOpacity>
-      <Text style={styles.header}>Enter Code</Text>
+      <Text style={[styles.header, { color: palette.text }]}>Enter Code</Text>
 
       <View style={{ alignItems: 'center', marginTop: 32 }}>
-        <View style={styles.iconCircle}>
-          <Text style={{ fontSize: 28 }}>🔒</Text>
+        <View style={[styles.iconCircle, { backgroundColor: palette.surface2 }]}>
+          <Text style={{ fontSize: 28 }}>??</Text>
         </View>
-        <Text style={styles.title}>Verification Code</Text>
-        <Text style={styles.sub}>We have sent a verification code to your email address.</Text>
+        <Text style={[styles.title, { color: palette.text }]}>Verification Code</Text>
+        <Text style={[styles.sub, { color: palette.muted }]}>We have sent a verification code to your email address.</Text>
       </View>
 
       <TextInput
@@ -80,8 +81,8 @@ export default function VerifyOtpScreen() {
       <View style={styles.codeRow}>
         {boxes.map((ch, idx) => (
           <TouchableOpacity key={idx} onPress={() => inputRef.current?.focus()}>
-            <View style={styles.codeBox}>
-              <Text style={styles.codeText}>{ch}</Text>
+            <View style={[styles.codeBox, { backgroundColor: palette.surface }]}>
+              <Text style={[styles.codeText, { color: palette.text }]}>{ch}</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -89,14 +90,14 @@ export default function VerifyOtpScreen() {
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <TouchableOpacity style={styles.primaryBtn} onPress={onVerify} disabled={code.length !== 6}>
+      <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: palette.brand }]} onPress={onVerify} disabled={code.length !== 6}>
         <Text style={styles.primaryText}>Verify</Text>
       </TouchableOpacity>
 
       <View style={{ alignItems: 'center', marginTop: 12 }}>
-        <Text style={{ color: '#9AA4A0' }}>
-          Didn’t receive the code?{' '}
-          <Text onPress={cooldown === 0 ? onResend : undefined} style={{ color: cooldown === 0 ? '#22c55e' : '#6b7280' }}>
+        <Text style={{ color: palette.muted }}>
+          Didn&#39;t receive the code?{' '}
+          <Text onPress={cooldown === 0 ? onResend : undefined} style={{ color: cooldown === 0 ? palette.tint : '#6b7280' }}>
             {cooldown === 0 ? 'Resend' : `Resend in ${cooldown}s`}
           </Text>
         </Text>
@@ -106,16 +107,16 @@ export default function VerifyOtpScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F1513', padding: 24 },
-  back: { color: '#9AA4A0', fontSize: 24, paddingVertical: 4 },
-  header: { color: '#FFFFFF', fontSize: 22, fontWeight: '800', marginTop: 8, textAlign: 'center' },
-  iconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#262A28', alignItems: 'center', justifyContent: 'center' },
-  title: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', marginTop: 16 },
-  sub: { color: '#A8B0AE', textAlign: 'center', marginTop: 8 },
+  container: { flex: 1, padding: 24 },
+  back: { fontSize: 24, paddingVertical: 4 },
+  header: { fontSize: 22, fontWeight: '800', marginTop: 8, textAlign: 'center' },
+  iconCircle: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 24, fontWeight: '800', marginTop: 16 },
+  sub: { textAlign: 'center', marginTop: 8 },
   codeRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 28 },
-  codeBox: { width: 48, height: 56, borderRadius: 8, backgroundColor: '#1F2624', alignItems: 'center', justifyContent: 'center' },
-  codeText: { color: '#E6F0EC', fontSize: 20, fontWeight: '700' },
-  primaryBtn: { marginTop: 24, backgroundColor: '#22c55e', paddingVertical: 16, borderRadius: 999, alignItems: 'center' },
+  codeBox: { width: 48, height: 56, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  codeText: { fontSize: 20, fontWeight: '700' },
+  primaryBtn: { marginTop: 24, paddingVertical: 16, borderRadius: 999, alignItems: 'center' },
   primaryText: { color: '#0B1110', fontSize: 18, fontWeight: '700' },
   error: { color: '#ef4444', marginTop: 8, textAlign: 'center' },
 });

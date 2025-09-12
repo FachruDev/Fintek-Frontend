@@ -10,7 +10,8 @@ export default function TabsLayout() {
     <Tabs screenOptions={{
       headerShown: false,
       tabBarActiveTintColor: palette.tint,
-      tabBarStyle: { backgroundColor: palette.background, borderTopColor: '#1f2624' },
+      tabBarInactiveTintColor: palette.tabIconDefault,
+      tabBarStyle: { backgroundColor: palette.background, borderTopColor: palette.border },
     }}>
       <Tabs.Screen name="summary" options={{
         title: 'Summary',
@@ -31,4 +32,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-

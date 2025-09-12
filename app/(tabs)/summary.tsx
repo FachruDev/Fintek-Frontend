@@ -1,6 +1,7 @@
 import { useRequireAuth } from '@/lib/use-require-auth';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useAppTheme } from '@/lib/theme';
 import { getMonthlySummary, MonthlySummary } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 
@@ -22,6 +23,7 @@ function CategoryItem({ icon, name, amount, progress }: { icon: string; name: st
 export default function SummaryScreen() {
   useRequireAuth();
   const toast = useToast();
+  const { palette } = useAppTheme();
   const now = new Date();
   const [ym, setYm] = useState<{ year: number; month: number }>({ year: now.getFullYear(), month: now.getMonth() + 1 });
   const [data, setData] = useState<MonthlySummary | null>(null);
@@ -77,28 +79,28 @@ export default function SummaryScreen() {
   const monthName = useMemo(() => new Date(ym.year, ym.month - 1, 1).toLocaleString(undefined, { month: 'long' }), [ym]);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScrollView style={[styles.container, { backgroundColor: palette.background }]} contentContainerStyle={{ paddingBottom: 40 }}>
       <View style={styles.headerRow}>
-        <Text style={styles.header}>Summary</Text>
+        <Text style={[styles.header, { color: palette.text }]}>Summary</Text>
         <TouchableOpacity onPress={() => setYm(m => ({ year: m.month === 1 ? m.year - 1 : m.year, month: m.month === 1 ? 12 : m.month - 1 }))}>
-          <Text style={{ color: '#A8B0AE', fontSize: 14 }}>{loading ? 'Loading…' : 'Prev'}</Text>
+          <Text style={{ color: palette.muted, fontSize: 14 }}>{loading ? 'Loading…' : 'Prev'}</Text>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.balanceCard}>
+      <TouchableOpacity style={[styles.balanceCard, { backgroundColor: palette.surface }]}>
         <View>
-          <Text style={styles.subtle}>{monthName} {ym.year} Balance</Text>
-          <Text style={styles.balance}>{balanceFmt}</Text>
+          <Text style={[styles.subtle, { color: palette.muted }]}>{monthName} {ym.year} Balance</Text>
+          <Text style={[styles.balance, { color: palette.text }]}>{balanceFmt}</Text>
         </View>
         <View>
-          <Text style={[styles.subtle, { textAlign: 'right' }]}>Income</Text>
+          <Text style={[styles.subtle, { textAlign: 'right', color: palette.muted }]}>Income</Text>
           <Text style={[styles.amount, styles.income]}>+${totals.income.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-          <Text style={[styles.subtle, { textAlign: 'right', marginTop: 6 }]}>Expense</Text>
+          <Text style={[styles.subtle, { textAlign: 'right', marginTop: 6, color: palette.muted }]}>Expense</Text>
           <Text style={[styles.amount, styles.expense]}>-${Math.abs(totals.expense).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
         </View>
       </TouchableOpacity>
 
-      <Text style={styles.sectionTitle}>Categories</Text>
+      <Text style={[styles.sectionTitle, { color: palette.text }]}>Categories</Text>
       <View style={{ gap: 12 }}>
         {grouped.expense.map((c, idx) => (
           <CategoryItem key={`e-${idx}`} icon={'-'} name={c.name} amount={c.amount} progress={c.progress} />
@@ -107,12 +109,12 @@ export default function SummaryScreen() {
           <CategoryItem key={`i-${idx}`} icon={'+'} name={c.name} amount={c.amount} progress={c.progress} />
         ))}
         {(!data || (grouped.expense.length + grouped.income.length) === 0) && (
-          <Text style={{ color: '#6b7280' }}>{loading ? 'Loading…' : 'No categories yet.'}</Text>
+          <Text style={{ color: palette.muted }}>{loading ? 'Loading…' : 'No categories yet.'}</Text>
         )}
       </View>
 
-      <Text style={styles.sectionTitle}>Income vs. Expense</Text>
-      <View style={styles.chartBox}>
+      <Text style={[styles.sectionTitle, { color: palette.text }]}>Income vs. Expense</Text>
+      <View style={[styles.chartBox, { backgroundColor: palette.surface }]}>
         <View style={styles.barsRow}>
           <View style={[styles.bar, { height: Math.max(10, (totals.income / totals.max) * 120), backgroundColor: '#22c55e' }]} />
           <View style={[styles.bar, { height: Math.max(10, (Math.abs(totals.expense) / totals.max) * 120), backgroundColor: '#ef4444' }]} />

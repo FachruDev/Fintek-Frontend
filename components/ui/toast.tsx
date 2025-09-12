@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { useAppTheme } from '@/lib/theme';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -39,13 +40,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(() => ({ show }), [show]);
 
+  const { palette } = useAppTheme();
   return (
     <ToastContext.Provider value={value}>
       {children}
       {visible && (
         <Animated.View pointerEvents="none" style={[styles.container, { opacity }]}> 
-          <View style={[styles.toast, type === 'success' && styles.success, type === 'error' && styles.error]}>
-            <Text style={styles.text}>{message}</Text>
+          <View style={[styles.toast, { backgroundColor: palette.background, borderColor: palette.tabIconDefault }, type === 'success' && { borderColor: '#22c55e' }, type === 'error' && { borderColor: '#ef4444' }]}>
+            <Text style={[styles.text, { color: palette.text }]}>{message}</Text>
           </View>
         </Animated.View>
       )}
@@ -61,9 +63,6 @@ export function useToast() {
 
 const styles = StyleSheet.create({
   container: { position: 'absolute', bottom: 24, left: 0, right: 0, alignItems: 'center' },
-  toast: { maxWidth: '90%', backgroundColor: '#1F2624', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 14, borderWidth: 1, borderColor: '#26312E' },
-  success: { borderColor: '#22c55e' },
-  error: { borderColor: '#ef4444' },
-  text: { color: '#E6F0EC' },
+  toast: { maxWidth: '90%', borderRadius: 999, paddingVertical: 10, paddingHorizontal: 14, borderWidth: 1 },
+  text: {},
 });
-

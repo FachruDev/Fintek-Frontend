@@ -3,71 +3,79 @@ import { useAuth } from '@/lib/use-auth';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { Routes } from '@/lib/routes';
+import { useAppTheme } from '@/lib/theme';
 
 export default function Profile() {
   useRequireAuth();
   const { user, logout } = useAuth();
+  const { mode, setMode, palette } = useAppTheme();
   const name = user?.name || 'User';
   const email = user?.email || '';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-      <Text style={styles.pageTitle}>Profile</Text>
+    <ScrollView style={[styles.container, { backgroundColor: palette.background }]} contentContainerStyle={{ paddingBottom: 40 }}>
+      <Text style={[styles.pageTitle, { color: palette.text }]}>Profile</Text>
       <View style={{ alignItems: 'center', marginTop: 16 }}>
-        <View style={styles.avatarOuter}>
-          <View style={styles.avatarInner}>
-            <Text style={styles.avatarText}>{initial}</Text>
+        <View style={[styles.avatarOuter, { backgroundColor: palette.surface }]}>
+          <View style={[styles.avatarInner, { backgroundColor: palette.surface2 }]}>
+            <Text style={[styles.avatarText, { color: palette.brand }]}>{initial}</Text>
           </View>
         </View>
-        <Text style={styles.name}>{name}</Text>
-        {email ? <Text style={styles.email}>{email}</Text> : null}
+        <Text style={[styles.name, { color: palette.text }]}>{name}</Text>
+        {email ? <Text style={[styles.email, { color: palette.muted }]}>{email}</Text> : null}
       </View>
 
-      <Text style={styles.sectionTitle}>Account</Text>
-      <View style={styles.card}>
-        <Row label="Personal Information" onPress={() => {}} />
-        <Divider />
-        <Row label="Settings" onPress={() => {}} />
-        <Divider />
-        <Row label="Preferences" onPress={() => {}} />
+      <Text style={[styles.sectionTitle, { color: palette.text }]}>Account</Text>
+      <View style={[styles.card, { backgroundColor: palette.surface }]}>
+        <Row label="Personal Information" onPress={() => {}} color={palette} />
+        <Divider color={palette.border} />
+        <Row label="Settings" onPress={() => {}} color={palette} />
+        <Divider color={palette.border} />
+        <Row label="Preferences" onPress={() => {}} color={palette} />
       </View>
 
-      <Text style={styles.sectionTitle}>Appearance</Text>
-      <View style={styles.card}>
+      <Text style={[styles.sectionTitle, { color: palette.text }]}>Appearance</Text>
+      <View style={[styles.card, { backgroundColor: palette.surface }]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text style={styles.rowText}>Theme</Text>
-          <View style={styles.themeToggle}>
-            <View style={[styles.themePill, { backgroundColor: '#22c55e' }]}>
-              <Text style={[styles.themeLabel, { color: '#0B1110' }]}>Dark</Text>
-            </View>
-            <View style={styles.themePill}><Text style={styles.themeLabel}>Light</Text></View>
+          <Text style={[styles.rowText, { color: palette.text }]}>Theme</Text>
+          <View style={[styles.themeToggle, { backgroundColor: palette.surface2 }] }>
+            <TouchableOpacity onPress={() => setMode('dark')}>
+              <View style={[styles.themePill, { backgroundColor: palette.surface2 }, mode !== 'light' && { backgroundColor: palette.brand }]}>
+                <Text style={[styles.themeLabel, { color: palette.text }, mode !== 'light' && { color: '#0B1110' }]}>Dark</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setMode('light')}>
+              <View style={[styles.themePill, { backgroundColor: palette.surface2 }, mode === 'light' && { backgroundColor: palette.brand }]}>
+                <Text style={[styles.themeLabel, { color: palette.text }, mode === 'light' && { color: '#0B1110' }]}>Light</Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Support</Text>
-      <View style={styles.card}>
-        <Row label="Help Center" onPress={() => {}} />
-        <Divider />
-        <Row label="Contact Us" onPress={() => {}} />
+      <Text style={[styles.sectionTitle, { color: palette.text }]}>Support</Text>
+      <View style={[styles.card, { backgroundColor: palette.surface }]}>
+        <Row label="Help Center" onPress={() => {}} color={palette} />
+        <Divider color={palette.border} />
+        <Row label="Contact Us" onPress={() => {}} color={palette} />
       </View>
 
-      <TouchableOpacity style={[styles.primaryBtn, { alignSelf: 'center', marginTop: 24 }]} onPress={() => { logout(); router.replace(Routes.onboarding); }}>
+      <TouchableOpacity style={[styles.primaryBtn, { alignSelf: 'center', marginTop: 24, backgroundColor: palette.brand }]} onPress={() => { logout(); router.replace(Routes.onboarding); }}>
         <Text style={styles.primaryText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
-function Divider() {
-  return <View style={{ height: 1, backgroundColor: '#26312E', marginHorizontal: -14 }} />;
+function Divider({ color }: { color: string }) {
+  return <View style={{ height: 1, backgroundColor: color, marginHorizontal: -14 }} />;
 }
 
-function Row({ label, onPress }: { label: string; onPress?: () => void }) {
+function Row({ label, onPress, color }: { label: string; onPress?: () => void; color: any }) {
   return (
     <TouchableOpacity onPress={onPress} style={styles.row}>
-      <Text style={styles.rowText}>{label}</Text>
-      <Text style={{ color: '#A8B0AE' }}>{'>'}</Text>
+      <Text style={[styles.rowText, { color: color.text }]}>{label}</Text>
+      <Text style={{ color: color.muted }}>{'>'}</Text>
     </TouchableOpacity>
   );
 }

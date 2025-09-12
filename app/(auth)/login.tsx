@@ -8,9 +8,11 @@ import { Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'r
 import { useAuth } from '@/lib/use-auth';
 import { useRedirectIfAuthenticated } from '@/lib/use-redirect-if-auth';
 import { Routes } from '@/lib/routes';
+import { useAppTheme } from '@/lib/theme';
 
 export default function LoginScreen() {
   useRedirectIfAuthenticated();
+  const { palette } = useAppTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -126,18 +128,18 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: palette.background }]}>
       <TouchableOpacity onPress={() => router.back()}>
-        <Text style={styles.back}>{'<'} </Text>
+        <Text style={[styles.back, { color: palette.muted }]}>{'<'} </Text>
       </TouchableOpacity>
-      <Text style={styles.header}>Welcome Back!</Text>
-      <Text style={styles.sub}>Log in to continue your financial journey.</Text>
+      <Text style={[styles.header, { color: palette.text }]}>Welcome Back!</Text>
+      <Text style={[styles.sub, { color: palette.muted }]}>Log in to continue your financial journey.</Text>
 
-      <View style={styles.fieldBox}>
+      <View style={[styles.fieldBox, { backgroundColor: palette.surface }]}>
         <TextInput
           placeholder="Enter your email"
           placeholderTextColor="#8A918E"
-          style={styles.input}
+          style={[styles.input, { color: palette.text }]}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -145,11 +147,11 @@ export default function LoginScreen() {
         />
       </View>
 
-      <View style={styles.fieldBox}>
+      <View style={[styles.fieldBox, { backgroundColor: palette.surface }]}>
         <TextInput
           placeholder="Enter your password"
           placeholderTextColor="#8A918E"
-          style={styles.input}
+          style={[styles.input, { color: palette.text }]}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
@@ -158,25 +160,25 @@ export default function LoginScreen() {
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <TouchableOpacity style={styles.primaryBtn} onPress={onLogin}>
+      <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: palette.brand }]} onPress={onLogin}>
         <Text style={styles.primaryText}>Log In</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.primaryBtn, { backgroundColor: '#1F2624', marginTop: 10 }]}
+        style={[styles.primaryBtn, { backgroundColor: palette.surface, marginTop: 10 }]}
         disabled={Platform.OS !== 'web' ? !request : false}
         onPress={() => {
           if (Platform.OS === 'web') startGoogleRedirectWeb();
           else promptAsync();
         }}
       >
-        <Text style={[styles.primaryText, { color: '#E6F0EC' }]}>Sign in with Google</Text>
+        <Text style={[styles.primaryText, { color: palette.text }]}>Sign in with Google</Text>
       </TouchableOpacity>
 
       <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 12 }}>
-        <Text style={{ color: '#9AA4A0' }}>Don’t have an account? </Text>
+        <Text style={{ color: palette.muted }}>Don&#39;t have an account? </Text>
         <TouchableOpacity onPress={() => router.push(Routes.register)}>
-          <Text style={{ color: '#22c55e', fontWeight: '700' }}>Register</Text>
+          <Text style={{ color: palette.tint, fontWeight: '700' }}>Register</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -184,13 +186,13 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F1513', padding: 24 },
-  back: { color: '#9AA4A0', fontSize: 24, paddingVertical: 4 },
-  header: { color: '#FFFFFF', fontSize: 36, fontWeight: '800', marginTop: 8 },
-  sub: { color: '#A8B0AE', fontSize: 16, marginTop: 8, marginBottom: 24 },
-  fieldBox: { backgroundColor: '#1F2624', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 6, marginBottom: 14 },
-  input: { color: '#E6F0EC', fontSize: 16, paddingVertical: 12 },
-  primaryBtn: { marginTop: 12, backgroundColor: '#22c55e', paddingVertical: 16, borderRadius: 999, alignItems: 'center' },
+  container: { flex: 1, padding: 24 },
+  back: { fontSize: 24, paddingVertical: 4 },
+  header: { fontSize: 36, fontWeight: '800', marginTop: 8 },
+  sub: { fontSize: 16, marginTop: 8, marginBottom: 24 },
+  fieldBox: { borderRadius: 16, paddingHorizontal: 16, paddingVertical: 6, marginBottom: 14 },
+  input: { fontSize: 16, paddingVertical: 12 },
+  primaryBtn: { marginTop: 12, paddingVertical: 16, borderRadius: 999, alignItems: 'center' },
   primaryText: { color: '#0B1110', fontSize: 18, fontWeight: '700' },
   error: { color: '#ef4444', marginTop: 8 },
 });

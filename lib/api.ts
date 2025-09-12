@@ -120,3 +120,25 @@ export async function deleteTransaction(id: string) {
     method: 'DELETE',
   });
 }
+
+// Summary
+export type CategoryBreakdown = {
+  category_id: string;
+  name: string;
+  kind: 'income' | 'expense';
+  total: string; // decimal
+};
+
+export type MonthlySummary = {
+  year: number;
+  month: number; // 1-12
+  total_income: string;
+  total_expense: string;
+  balance: string;
+  category_breakdown: CategoryBreakdown[];
+};
+
+export async function getMonthlySummary(params: { year: number; month: number }) {
+  const qs = new URLSearchParams({ year: String(params.year), month: String(params.month) }).toString();
+  return request<MonthlySummary>(`/summary/month?${qs}`, { method: 'GET' });
+}

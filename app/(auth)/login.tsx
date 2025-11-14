@@ -4,7 +4,8 @@ import * as Google from 'expo-auth-session/providers/google';
 import { router, useRootNavigationState } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/lib/use-auth';
 import { useRedirectIfAuthenticated } from '@/lib/use-redirect-if-auth';
 import { Routes } from '@/lib/routes';
@@ -16,6 +17,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isNavigationReady, setIsNavigationReady] = useState(false);
   const { loginWithGoogle } = useAuth();
@@ -108,6 +113,7 @@ export default function LoginScreen() {
       return;
     }
     setError(null);
+    setSubmitting(true);
     signIn(email, password)
       .then(() => {
         setTimeout(() => {
@@ -124,75 +130,226 @@ export default function LoginScreen() {
         } else {
           setError(e.message || 'Login failed');
         }
-      });
+      })
+      .finally(() => setSubmitting(false));
   };
 
   return (
     <View style={[styles.container, { backgroundColor: palette.background }]}>
-      <TouchableOpacity onPress={() => router.back()}>
-        <Text style={[styles.back, { color: palette.muted }]}>{'<'} </Text>
-      </TouchableOpacity>
-      <Text style={[styles.header, { color: palette.text }]}>Welcome Back!</Text>
-      <Text style={[styles.sub, { color: palette.muted }]}>Log in to continue your financial journey.</Text>
-
-      <View style={[styles.fieldBox, { backgroundColor: palette.surface }]}>
-        <TextInput
-          placeholder="Enter your email"
-          placeholderTextColor="#8A918E"
-          style={[styles.input, { color: palette.text }]}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
-
-      <View style={[styles.fieldBox, { backgroundColor: palette.surface }]}>
-        <TextInput
-          placeholder="Enter your password"
-          placeholderTextColor="#8A918E"
-          style={[styles.input, { color: palette.text }]}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-      </View>
-
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-
-      <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: palette.brand }]} onPress={onLogin}>
-        <Text style={styles.primaryText}>Log In</Text>
-      </TouchableOpacity>
-
+      {/* Back */}
       <TouchableOpacity
-        style={[styles.primaryBtn, { backgroundColor: palette.surface, marginTop: 10 }]}
-        disabled={Platform.OS !== 'web' ? !request : false}
-        onPress={() => {
-          if (Platform.OS === 'web') startGoogleRedirectWeb();
-          else promptAsync();
-        }}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+        style={[styles.backBtn, { backgroundColor: palette.surface }]}
+        onPress={() => router.back()}
+        activeOpacity={0.8}
       >
-        <Text style={[styles.primaryText, { color: palette.text }]}>Sign in with Google</Text>
+        <Ionicons name="chevron-back" size={22} color={palette.muted} />
       </TouchableOpacity>
 
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 12 }}>
-        <Text style={{ color: palette.muted }}>Don&#39;t have an account? </Text>
-        <TouchableOpacity onPress={() => router.push(Routes.register)}>
-          <Text style={{ color: palette.tint, fontWeight: '700' }}>Register</Text>
-        </TouchableOpacity>
+      <View style={styles.centerWrap}>
+        <View style={[styles.card, { backgroundColor: palette.surface }]}>
+          <Text style={[styles.header, { color: palette.text }]}>Welcome back</Text>
+          <Text style={[styles.sub, { color: palette.muted }]}>Log in to continue your financial journey.</Text>
+
+          {/* Email */}
+          <View style={styles.labelRow}>
+            <Text style={[styles.label, { color: palette.muted }]}>Email</Text>
+          </View>
+          <View
+            style={[
+              styles.fieldRow,
+              { borderColor: emailFocused ? palette.tint : 'transparent', backgroundColor: palette.background },
+            ]}
+          >
+            <Ionicons name="mail-outline" size={18} color={palette.muted} style={styles.leftIcon} />
+            <TextInput
+              placeholder="you@example.com"
+              placeholderTextColor="#8A918E"
+              autoComplete="email"
+              style={[styles.input, { color: palette.text }]}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              onFocus={() => setEmailFocused(true)}
+              onBlur={() => setEmailFocused(false)}
+              returnKeyType="next"
+              selectionColor={palette.tint}
+            />
+          </View>
+
+          {/* Password */}
+          <View style={[styles.labelRow, { marginTop: 14 }]}>
+            <Text style={[styles.label, { color: palette.muted }]}>Password</Text>
+          </View>
+          <View
+            style={[
+              styles.fieldRow,
+              { borderColor: passwordFocused ? palette.tint : 'transparent', backgroundColor: palette.background },
+            ]}
+          >
+            <Ionicons name="lock-closed-outline" size={18} color={palette.muted} style={styles.leftIcon} />
+            <TextInput
+              placeholder="Enter your password"
+              placeholderTextColor="#8A918E"
+              style={[styles.input, { color: palette.text }]}
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              onFocus={() => setPasswordFocused(true)}
+              onBlur={() => setPasswordFocused(false)}
+              onSubmitEditing={onLogin}
+              returnKeyType="done"
+              selectionColor={palette.tint}
+            />
+            <TouchableOpacity onPress={() => setShowPassword((s) => !s)} accessibilityRole="button">
+              <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color={palette.muted} />
+            </TouchableOpacity>
+          </View>
+
+          {error ? (
+            <View style={[styles.errorBox, { backgroundColor: '#FEE2E2' }]}> 
+              <Ionicons name="alert-circle-outline" size={16} color="#B91C1C" style={{ marginRight: 6 }} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          <TouchableOpacity
+            style={[styles.primaryBtn, { backgroundColor: palette.brand }]}
+            onPress={onLogin}
+            activeOpacity={0.9}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator color="#0B1110" />
+            ) : (
+              <Text style={styles.primaryText}>Log in</Text>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.dividerRow}>
+            <View style={[styles.divider, { backgroundColor: palette.background }]} />
+            <Text style={{ color: palette.muted, fontSize: 12, marginHorizontal: 10 }}>or continue with</Text>
+            <View style={[styles.divider, { backgroundColor: palette.background }]} />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.ghostBtn, { backgroundColor: palette.background }]}
+            disabled={Platform.OS !== 'web' ? !request || submitting : submitting}
+            onPress={() => {
+              if (Platform.OS === 'web') startGoogleRedirectWeb();
+              else promptAsync();
+            }}
+            activeOpacity={0.9}
+          >
+            <Ionicons name="logo-google" size={18} color={palette.text} />
+            <Text style={[styles.ghostText, { color: palette.text }]}>Sign in with Google</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.footerRow}>
+          <Text style={{ color: palette.muted }}>Dont have an account? </Text>
+          <TouchableOpacity onPress={() => router.push(Routes.register)}>
+            <Text style={{ color: palette.tint, fontWeight: '700' }}>Register</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24 },
-  back: { fontSize: 24, paddingVertical: 4 },
-  header: { fontSize: 36, fontWeight: '800', marginTop: 8 },
-  sub: { fontSize: 16, marginTop: 8, marginBottom: 24 },
-  fieldBox: { borderRadius: 16, paddingHorizontal: 16, paddingVertical: 6, marginBottom: 14 },
-  input: { fontSize: 16, paddingVertical: 12 },
-  primaryBtn: { marginTop: 12, paddingVertical: 16, borderRadius: 999, alignItems: 'center' },
-  primaryText: { color: '#0B1110', fontSize: 18, fontWeight: '700' },
-  error: { color: '#ef4444', marginTop: 8 },
+  container: { flex: 1, paddingHorizontal: 20, paddingTop: 24 },
+  centerWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  backBtn: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 420,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
+  },
+  header: { fontSize: 28, fontWeight: '800' },
+  sub: { fontSize: 14, marginTop: 6, marginBottom: 18 },
+  labelRow: { flexDirection: 'row', alignItems: 'center' },
+  label: { fontSize: 12, fontWeight: '600', letterSpacing: 0.2 },
+  fieldRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 6,
+  },
+  leftIcon: { marginRight: 8 },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 8,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    borderColor: 'transparent',
+    // Remove white outline on web when focused
+    outlineStyle: 'none' as any,
+    outlineWidth: 0 as any,
+  },
+  primaryBtn: {
+    marginTop: 16,
+    paddingVertical: 14,
+    borderRadius: 999,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+  primaryText: { color: '#0B1110', fontSize: 16, fontWeight: '700' },
+  ghostBtn: {
+    marginTop: 12,
+    paddingVertical: 12,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  ghostText: { fontSize: 15, fontWeight: '600', marginLeft: 8 },
+  dividerRow: {
+    marginTop: 18,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  divider: { height: 1, flex: 1, opacity: 0.5, borderRadius: 1 },
+  footerRow: { flexDirection: 'row', justifyContent: 'center', marginTop: 16 },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  errorText: { color: '#B91C1C', fontSize: 13, fontWeight: '600' },
 });

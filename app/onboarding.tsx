@@ -9,7 +9,7 @@ export default function Onboarding() {
     <View style={[styles.container, { backgroundColor: palette.background }]}>
       <View style={styles.center}>
         <View style={[styles.logoCircle, { backgroundColor: palette.surface2 }]}>
-          <Text style={[styles.logo, { color: palette.brand }]}>??</Text>
+          <Text style={[styles.logo, { color: palette.brand }]}>F</Text>
         </View>
         <Text style={[styles.title, { color: palette.text }]}>FinTrack</Text>
         <Text style={[styles.subtitle, { color: palette.muted }]}>Your Personal Finance Companion</Text>
